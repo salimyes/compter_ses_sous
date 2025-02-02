@@ -1,22 +1,20 @@
 import 'package:flutter/material.dart';
-import 'calendar_page.dart'; // Importe le fichier où se trouve le calendrier
+import 'screens/home_screen.dart';
 
 void main() {
-  runApp(const MyApp());
+  runApp(MyApp());
 }
 
 class MyApp extends StatelessWidget {
-  const MyApp({super.key});
-
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
-      title: 'Application Flutter',
+      debugShowCheckedModeBanner: false,
+      title: 'Gestion des mouvements',
       theme: ThemeData(
-        colorScheme: ColorScheme.fromSeed(seedColor: Colors.blue),
-        useMaterial3: true,
+        primarySwatch: Colors.blue,
       ),
-      home: CalendarPage(), // Affiche la page du calendrier comme page d'accueil
+      home: HomeScreen(),
     );
   }
 }
