@@ -14,28 +14,16 @@ class _AddMovementScreenState extends State<AddMovementScreen> {
   final _formKey = GlobalKey<FormState>();
   late String name;
   late double amount;
-  late DateTime selectedDate;
+  late int selectedDay;
+  String transactionType = 'Entrée'; // Valeurs possibles : Entrée, Sortie
 
   @override
   void initState() {
     super.initState();
     name = widget.movement?.name ?? '';
-    amount = widget.movement?.amount ?? 0.0;
-    selectedDate = widget.movement?.date ?? DateTime.now();
-  }
-
-  Future<void> _selectDate(BuildContext context) async {
-    final DateTime? picked = await showDatePicker(
-      context: context,
-      initialDate: selectedDate,
-      firstDate: DateTime(2020),
-      lastDate: DateTime(2030),
-    );
-    if (picked != null && picked != selectedDate) {
-      setState(() {
-        selectedDate = picked;
-      });
-    }
+    amount = widget.movement?.amount.abs() ?? 0.0; // Toujours positif en entrée
+    selectedDay = widget.movement?.date.day ?? DateTime.now().day;
+    transactionType = (widget.movement?.amount ?? 0) >= 0 ? 'Entrée' : 'Sortie';
   }
 
   @override
@@ -47,6 +35,7 @@ class _AddMovementScreenState extends State<AddMovementScreen> {
         child: Form(
           key: _formKey,
           child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               TextFormField(
                 initialValue: name,
@@ -57,24 +46,48 @@ class _AddMovementScreenState extends State<AddMovementScreen> {
                 initialValue: amount.toString(),
                 decoration: InputDecoration(labelText: 'Montant'),
                 keyboardType: TextInputType.number,
-                onChanged: (value) => amount = double.tryParse(value) ?? 0.0,
+                onChanged: (value) {
+                  double? enteredAmount = double.tryParse(value);
+                  if (enteredAmount != null && enteredAmount >= 0) {
+                    amount = enteredAmount;
+                  }
+                },
               ),
               SizedBox(height: 20),
-              Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                children: [
-                  Text('Date : ${selectedDate.day}/${selectedDate.month}/${selectedDate.year}'),
-                  ElevatedButton(
-                    onPressed: () => _selectDate(context),
-                    child: Text('Sélectionner une date'),
-                  ),
-                ],
+              Text("Sélectionner le jour du paiement :"),
+              DropdownButton<int>(
+                value: selectedDay,
+                items: List.generate(31, (index) => index + 1)
+                    .map((day) => DropdownMenuItem(value: day, child: Text("Jour $day")))
+                    .toList(),
+                onChanged: (value) {
+                  setState(() {
+                    selectedDay = value!;
+                  });
+                },
+              ),
+              SizedBox(height: 20),
+              Text("Type de transaction :"),
+              DropdownButton<String>(
+                value: transactionType,
+                items: ['Entrée', 'Sortie']
+                    .map((type) => DropdownMenuItem(value: type, child: Text(type)))
+                    .toList(),
+                onChanged: (value) {
+                  setState(() {
+                    transactionType = value!;
+                  });
+                },
               ),
               SizedBox(height: 20),
               ElevatedButton(
                 onPressed: () {
                   if (_formKey.currentState!.validate()) {
-                    Navigator.pop(context, Movement(name: name, amount: amount, date: selectedDate));
+                    double finalAmount = transactionType == 'Sortie' ? -amount : amount;
+                    Navigator.pop(
+                      context,
+                      Movement(name: name, amount: finalAmount, date: DateTime(DateTime.now().year, DateTime.now().month, selectedDay)),
+                    );
                   }
                 },
                 child: Text('Enregistrer'),

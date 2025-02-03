@@ -20,13 +20,13 @@ class CalendarWidget extends StatelessWidget {
       padding: EdgeInsets.all(8),
       gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
         crossAxisCount: 7,
-        childAspectRatio: 1.2,
+        childAspectRatio: 1.1,
       ),
       itemCount: daysInMonth,
       itemBuilder: (context, index) {
         DateTime date = DateTime(selectedDate.year, selectedDate.month, index + 1);
         Movement? movement = movements.firstWhere(
-              (m) => m.date.year == date.year && m.date.month == date.month && m.date.day == date.day,
+              (m) => m.date.day == date.day,
           orElse: () => Movement(name: '', amount: 0, date: date),
         );
 
@@ -64,14 +64,28 @@ class CalendarWidget extends StatelessWidget {
             }
           },
           child: Card(
-            color: movement.amount != 0 ? Colors.blue.shade100 : Colors.white,
+            color: movement.amount != 0 ? Colors.blue.shade50 : Colors.white,
             child: Column(
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
-                Text('${index + 1}', style: TextStyle(fontWeight: FontWeight.bold)),
+                Text('${index + 1}', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16)),
                 if (movement.name.isNotEmpty) ...[
-                  Text(movement.name, style: TextStyle(fontSize: 12, fontWeight: FontWeight.w500)),
-                  Text('${movement.amount}€', style: TextStyle(fontSize: 12, color: movement.amount >= 0 ? Colors.green : Colors.red)),
+                  FittedBox(
+                    fit: BoxFit.scaleDown,
+                    child: Text(
+                      movement.name,
+                      style: TextStyle(fontSize: 12, fontWeight: FontWeight.w600),
+                      textAlign: TextAlign.center,
+                    ),
+                  ),
+                  Text(
+                    '${movement.amount}€',
+                    style: TextStyle(
+                      fontSize: 12,
+                      color: movement.amount >= 0 ? Colors.green : Colors.red,
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
                 ],
               ],
             ),
