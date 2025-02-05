@@ -15,7 +15,7 @@ class _HomeScreenState extends State<HomeScreen> {
   List<Movement> movements = [];
   DateTime selectedDate = DateTime.now();
 
-  // Calcul du total des transactions du mois
+  // Calcul du total des transactions
   double get totalAmount {
     return movements.fold(0, (sum, movement) => sum + movement.amount);
   }
@@ -47,7 +47,7 @@ class _HomeScreenState extends State<HomeScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: const Text('Gestion des mouvements')),
+      appBar: AppBar(title: const Text('Compter Ses Sous\nGestion des mouvements mensuels')),
       body: Column(
         children: [
           Expanded(

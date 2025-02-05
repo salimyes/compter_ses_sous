@@ -32,7 +32,6 @@ class _AddMovementScreenState extends State<AddMovementScreen> {
 
     _amountController.text = amountText;
 
-    // Efface le texte dès que l'utilisateur clique dans le champ
     _amountController.addListener(() {
       if (_amountController.text == '0.0') {
         _amountController.clear();
@@ -101,7 +100,7 @@ class _AddMovementScreenState extends State<AddMovementScreen> {
 
               const SizedBox(height: 20),
 
-              // Sélection du type de mouvement
+              // selection du type de mouvement
               Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
@@ -133,7 +132,7 @@ class _AddMovementScreenState extends State<AddMovementScreen> {
                   if (_formKey.currentState!.validate()) {
                     double amount = double.tryParse(amountText) ?? 0.0;
                     if (selectedType == 'Dépense' && amount > 0) {
-                      amount = -amount; // Convertir en négatif si c'est une dépense
+                      amount = -amount; // si c'est une dépense alors négatif
                     }
 
                     Navigator.pop(

@@ -26,10 +26,10 @@ class CalendarWidget extends StatelessWidget {
         children: [
           Expanded(
             child: GridView.builder(
-              physics: const NeverScrollableScrollPhysics(), // Empêche le défilement
+              physics: const NeverScrollableScrollPhysics(),
               gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
                 crossAxisCount: 7,
-                childAspectRatio: 0.6, // Diminue pour allonger les cases en hauteur
+                childAspectRatio: 0.6, // Diminuer pour allonger les cases en hauteur
               ),
               itemCount: daysInMonth,
               itemBuilder: (context, index) {
