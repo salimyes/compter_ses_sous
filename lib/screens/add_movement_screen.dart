@@ -4,7 +4,7 @@ import '../models/movement.dart';
 class AddMovementScreen extends StatefulWidget {
   final Movement? movement;
 
-  AddMovementScreen({this.movement});
+  const AddMovementScreen({super.key, this.movement});
 
   @override
   _AddMovementScreenState createState() => _AddMovementScreenState();
@@ -51,7 +51,7 @@ class _AddMovementScreenState extends State<AddMovementScreen> {
     return Scaffold(
       appBar: AppBar(title: Text(widget.movement == null ? 'Ajouter un mouvement' : 'Modifier un mouvement')),
       body: Padding(
-        padding: EdgeInsets.all(16),
+        padding: const EdgeInsets.all(16),
         child: Form(
           key: _formKey,
           child: Column(
@@ -59,21 +59,21 @@ class _AddMovementScreenState extends State<AddMovementScreen> {
               // Nom du mouvement
               TextFormField(
                 initialValue: name,
-                decoration: InputDecoration(labelText: 'Nom du mouvement'),
+                decoration: const InputDecoration(labelText: 'Nom du mouvement'),
                 onChanged: (value) => name = value,
               ),
 
               // Montant du mouvement
               TextFormField(
                 controller: _amountController,
-                decoration: InputDecoration(labelText: 'Montant'),
+                decoration: const InputDecoration(labelText: 'Montant'),
                 keyboardType: TextInputType.number,
                 onChanged: (value) {
                   amountText = value;
                 },
               ),
 
-              SizedBox(height: 20),
+              const SizedBox(height: 20),
 
               // Sélection du jour du mois
               Row(
@@ -99,13 +99,13 @@ class _AddMovementScreenState extends State<AddMovementScreen> {
                 ],
               ),
 
-              SizedBox(height: 20),
+              const SizedBox(height: 20),
 
               // Sélection du type de mouvement
               Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
-                  Text('Type de mouvement :'),
+                  const Text('Type de mouvement :'),
                   DropdownButton<String>(
                     value: selectedType,
                     items: ['Entrée', 'Dépense']
@@ -125,7 +125,7 @@ class _AddMovementScreenState extends State<AddMovementScreen> {
                 ],
               ),
 
-              SizedBox(height: 20),
+              const SizedBox(height: 20),
 
               // Bouton d'enregistrement
               ElevatedButton(
@@ -146,7 +146,7 @@ class _AddMovementScreenState extends State<AddMovementScreen> {
                     );
                   }
                 },
-                child: Text('Enregistrer'),
+                child: const Text('Enregistrer'),
               ),
             ],
           ),

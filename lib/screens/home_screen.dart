@@ -5,6 +5,8 @@ import '../widgets/total_display.dart';
 import 'add_movement_screen.dart';
 
 class HomeScreen extends StatefulWidget {
+  const HomeScreen({super.key});
+
   @override
   _HomeScreenState createState() => _HomeScreenState();
 }
@@ -45,7 +47,7 @@ class _HomeScreenState extends State<HomeScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: Text('Gestion des mouvements')),
+      appBar: AppBar(title: const Text('Gestion des mouvements')),
       body: Column(
         children: [
           Expanded(
@@ -62,12 +64,12 @@ class _HomeScreenState extends State<HomeScreen> {
               final result = await Navigator.push(
                 context,
                 MaterialPageRoute(
-                  builder: (context) => AddMovementScreen(),
+                  builder: (context) => const AddMovementScreen(),
                 ),
               );
               if (result != null) addMovement(result);
             },
-            child: Text('Ajouter un mouvement'),
+            child: const Text('Ajouter un mouvement'),
           ),
         ],
       ),
