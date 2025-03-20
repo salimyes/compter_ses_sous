@@ -13,20 +13,20 @@ class AddMovementScreen extends StatefulWidget {
 class _AddMovementScreenState extends State<AddMovementScreen> {
   final _formKey = GlobalKey<FormState>();
   late String name;
-  late String amountText; // Stocke le texte du montant
+  late String amountText; // Texte saisi pour le montant
   late int selectedDay;
-  late String selectedType; // "Entrée" ou "Dépense"
+  late String selectedType; // 'Entrée' ou 'Dépense'
   final TextEditingController _amountController = TextEditingController();
 
   @override
   void initState() {
     super.initState();
     name = widget.movement?.name ?? '';
-    amountText = widget.movement?.amount != null && widget.movement!.amount != 0
-        ? widget.movement!.amount.toString()
-        : ''; // Par défaut, champ vide
+    amountText = (widget.movement?.amount != null && widget.movement!.amount != 0)
+        ? widget.movement!.amount.abs().toString() // toujours positif dans le champ
+        : '';
     selectedDay = widget.movement?.date.day ?? DateTime.now().day;
-    selectedType = widget.movement?.amount != null && widget.movement!.amount < 0
+    selectedType = (widget.movement?.amount != null && widget.movement!.amount < 0)
         ? 'Dépense'
         : 'Entrée';
 
@@ -48,21 +48,22 @@ class _AddMovementScreenState extends State<AddMovementScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: Text(widget.movement == null ? 'Ajouter un mouvement' : 'Modifier un mouvement')),
+      appBar: AppBar(
+        title: Text(widget.movement == null ? 'Ajouter un mouvement' : 'Modifier un mouvement'),
+      ),
       body: Padding(
         padding: const EdgeInsets.all(16),
         child: Form(
           key: _formKey,
           child: Column(
             children: [
-              // Nom du mouvement
+              // Champ Nom
               TextFormField(
                 initialValue: name,
                 decoration: const InputDecoration(labelText: 'Nom du mouvement'),
                 onChanged: (value) => name = value,
               ),
-
-              // Montant du mouvement
+              // Champ Montant
               TextFormField(
                 controller: _amountController,
                 decoration: const InputDecoration(labelText: 'Montant'),
@@ -71,10 +72,8 @@ class _AddMovementScreenState extends State<AddMovementScreen> {
                   amountText = value;
                 },
               ),
-
               const SizedBox(height: 20),
-
-              // Sélection du jour du mois
+              // Sélection du jour (seul le jour est sélectionné)
               Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
@@ -97,10 +96,8 @@ class _AddMovementScreenState extends State<AddMovementScreen> {
                   ),
                 ],
               ),
-
               const SizedBox(height: 20),
-
-              // selection du type de mouvement
+              // Sélection du type de mouvement
               Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
@@ -123,18 +120,15 @@ class _AddMovementScreenState extends State<AddMovementScreen> {
                   ),
                 ],
               ),
-
               const SizedBox(height: 20),
-
               // Bouton d'enregistrement
               ElevatedButton(
                 onPressed: () {
                   if (_formKey.currentState!.validate()) {
                     double amount = double.tryParse(amountText) ?? 0.0;
                     if (selectedType == 'Dépense' && amount > 0) {
-                      amount = -amount; // si c'est une dépense alors négatif
+                      amount = -amount; // Convertir en négatif pour une dépense
                     }
-
                     Navigator.pop(
                       context,
                       Movement(

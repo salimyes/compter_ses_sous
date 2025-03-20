@@ -8,11 +8,14 @@ class TotalDisplay extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Container(
-      padding: const EdgeInsets.all(12),
-      color: total >= 0 ? Colors.green.shade300 : Colors.red.shade300,
+      padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 20),
+      decoration: BoxDecoration(
+        color: total >= 0 ? Colors.green : Colors.red,
+        borderRadius: BorderRadius.circular(16),
+      ),
       child: Text(
-        'Total: ${total.toStringAsFixed(2)}€',
-        style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+        'TOTAL : ${total.toStringAsFixed(2)}€',
+        style: const TextStyle(fontSize: 20, fontWeight: FontWeight.bold, color: Colors.white),
       ),
     );
   }
