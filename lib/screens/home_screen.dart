@@ -51,13 +51,14 @@ class _HomeScreenState extends State<HomeScreen> {
     String yearText = selectedDate.year.toString();
 
     return Scaffold(
+      /*
       appBar: AppBar(
         title: Row(
           mainAxisAlignment: MainAxisAlignment.spaceBetween,
           children: [
             Row(
               children: [
-                Image.asset('assets/icons/app_logo.png', height: 30), // logo à gauche (assure-toi que le fichier existe)
+                Image.asset('assets/icons/app_logo.png', height: 30),
                 const SizedBox(width: 8),
                 const Text('COMPTER SES SOUS', style: TextStyle(fontWeight: FontWeight.bold)),
               ],
@@ -71,6 +72,27 @@ class _HomeScreenState extends State<HomeScreen> {
           ],
         ),
       ),
+       */
+      appBar: AppBar(
+        title: Row(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Image.asset('assets/icons/app_logo.png', height: 30),
+            const SizedBox(width: 8),
+            const Text('COMPTER SES SOUS', style: TextStyle(fontWeight: FontWeight.bold)),
+          ],
+        ),
+        centerTitle: true, // Assure un bon centrage
+        actions: [
+          IconButton(
+            icon: const Icon(Icons.settings),
+            onPressed: () {
+              // Action pour les paramètres
+            },
+          ),
+        ],
+      ),
+
       body: Column(
         children: [
           const SizedBox(height: 10),
@@ -79,12 +101,13 @@ class _HomeScreenState extends State<HomeScreen> {
             style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
           ),
           const SizedBox(height: 10),
-          // Le calendrier occupe environ 70% de l'écran
+          // Passe onAdd à addMovement pour que l'appui sur une case vide ajoute un mouvement
           CalendarWidget(
             movements: movements,
             onEdit: editMovement,
             onDelete: deleteMovement,
             selectedDate: selectedDate,
+            onAdd: addMovement,
           ),
           const SizedBox(height: 10),
           TotalDisplay(total: totalAmount),
@@ -107,7 +130,7 @@ class _HomeScreenState extends State<HomeScreen> {
               padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 20),
             ),
             child: const Text(
-              'AJOUTER UN MOUVEMENT',
+              'Ajouter un mouvement',
               style: TextStyle(color: Colors.white),
             ),
           ),
