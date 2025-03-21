@@ -15,19 +15,28 @@ class _HomeScreenState extends State<HomeScreen> {
   List<Movement> movements = [];
   DateTime selectedDate = DateTime.now();
 
-  // Calcul du total des transactions
   double get totalAmount {
     return movements.fold(0, (sum, movement) => sum + movement.amount);
   }
 
-  // Ajouter un mouvement
+  Movement? getNextMovement() {
+    movements.sort((a, b) => a.date.compareTo(b.date));
+    DateTime now = DateTime.now();
+
+    for (Movement movement in movements) {
+      if (movement.date.isAfter(now)) {
+        return movement;
+      }
+    }
+    return null;
+  }
+
   void addMovement(Movement movement) {
     setState(() {
       movements.add(movement);
     });
   }
 
-  // Modifier un mouvement
   void editMovement(Movement oldMovement, Movement newMovement) {
     setState(() {
       int index = movements.indexOf(oldMovement);
@@ -37,7 +46,6 @@ class _HomeScreenState extends State<HomeScreen> {
     });
   }
 
-  // Supprimer un mouvement
   void deleteMovement(Movement movement) {
     setState(() {
       movements.remove(movement);
@@ -46,53 +54,34 @@ class _HomeScreenState extends State<HomeScreen> {
 
   @override
   Widget build(BuildContext context) {
-    // Exemple : affichage du mois en lettres
     String monthText = _getMonthName(selectedDate.month).toUpperCase();
     String yearText = selectedDate.year.toString();
+    Movement? nextMovement = getNextMovement();
 
     return Scaffold(
-      /*
       appBar: AppBar(
+        automaticallyImplyLeading: false,
+        backgroundColor: Colors.grey.shade300,
+        toolbarHeight: 60,
         title: Row(
           mainAxisAlignment: MainAxisAlignment.spaceBetween,
           children: [
-            Row(
-              children: [
-                Image.asset('assets/icons/app_logo.png', height: 30),
-                const SizedBox(width: 8),
-                const Text('COMPTER SES SOUS', style: TextStyle(fontWeight: FontWeight.bold)),
-              ],
+            Image.asset('assets/icons/app_logo.png', height: 30),
+            const Text(
+              'COMPTER SES SOUS',
+              style: TextStyle(
+                fontWeight: FontWeight.bold,
+                color: Colors.black,
+              ),
             ),
             IconButton(
-              icon: const Icon(Icons.settings),
-              onPressed: () {
-                // Action pour les paramètres
-              },
+              icon: const Icon(Icons.settings, color: Colors.black),
+              onPressed: () {},
             ),
           ],
         ),
+        centerTitle: true,
       ),
-       */
-      appBar: AppBar(
-        title: Row(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            Image.asset('assets/icons/app_logo.png', height: 30),
-            const SizedBox(width: 8),
-            const Text('COMPTER SES SOUS', style: TextStyle(fontWeight: FontWeight.bold)),
-          ],
-        ),
-        centerTitle: true, // Assure un bon centrage
-        actions: [
-          IconButton(
-            icon: const Icon(Icons.settings),
-            onPressed: () {
-              // Action pour les paramètres
-            },
-          ),
-        ],
-      ),
-
       body: Column(
         children: [
           const SizedBox(height: 10),
@@ -101,7 +90,6 @@ class _HomeScreenState extends State<HomeScreen> {
             style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
           ),
           const SizedBox(height: 10),
-          // Passe onAdd à addMovement pour que l'appui sur une case vide ajoute un mouvement
           CalendarWidget(
             movements: movements,
             onEdit: editMovement,
@@ -110,6 +98,20 @@ class _HomeScreenState extends State<HomeScreen> {
             onAdd: addMovement,
           ),
           const SizedBox(height: 10),
+
+          if (nextMovement != null)
+            Padding(
+              padding: const EdgeInsets.symmetric(vertical: 12.0),
+              child: Text(
+                _getNextMovementText(nextMovement),
+                textAlign: TextAlign.center,
+                style: const TextStyle(
+                  fontSize: 16,
+                  fontWeight: FontWeight.bold,
+                ),
+              ),
+            ),
+
           TotalDisplay(total: totalAmount),
           const SizedBox(height: 10),
           ElevatedButton(
@@ -137,6 +139,14 @@ class _HomeScreenState extends State<HomeScreen> {
         ],
       ),
     );
+  }
+
+  String _getNextMovementText(Movement movement) {
+    String type = movement.amount < 0 ? 'dépense' : 'entrée';
+    String motType = movement.amount < 0 ? 'prélèvement' : 'versement';
+    String formattedAmount = movement.amount.toStringAsFixed(2).replaceAll('.00', '');
+
+    return 'Prochaine $type : \n"${movement.name}" $motType de :\n $formattedAmount€ le ${movement.date.day}/${movement.date.month}/${movement.date.year}';
   }
 
   String _getMonthName(int month) {

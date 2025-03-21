@@ -8,7 +8,6 @@ class CalendarWidget extends StatelessWidget {
   final Function(Movement) onDelete;
   final Function(Movement) onAdd;
   final DateTime selectedDate;
-  final double verticalSpacing; // Ajouté pour pouvoir modifier l'espace vertical entre les cases
 
   CalendarWidget({
     required this.movements,
@@ -16,7 +15,6 @@ class CalendarWidget extends StatelessWidget {
     required this.onDelete,
     required this.onAdd,
     required this.selectedDate,
-    this.verticalSpacing = 24, // Valeur par défaut (modifiable)
   });
 
   int get daysInMonth {
@@ -32,7 +30,7 @@ class CalendarWidget extends StatelessWidget {
       child: SingleChildScrollView(
         child: Center(
           child: Container(
-            height: screenHeight * 0.5,
+            height: screenHeight * 0.4,
             width: screenWidth * 0.90,
             padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
             decoration: BoxDecoration(
@@ -42,10 +40,10 @@ class CalendarWidget extends StatelessWidget {
             child: GridView.builder(
               physics: const NeverScrollableScrollPhysics(),
               shrinkWrap: true,
-              gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+              gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
                 crossAxisCount: 7,
                 crossAxisSpacing: 10,
-                mainAxisSpacing: verticalSpacing, // On applique la valeur du spacing vertical
+                mainAxisSpacing: 24,
                 childAspectRatio: 1,
               ),
               itemCount: daysInMonth,
@@ -98,7 +96,7 @@ class CalendarWidget extends StatelessWidget {
                     }
                   },
                   child: Stack(
-                    clipBehavior: Clip.none, // Permet au texte de dépasser !
+                    clipBehavior: Clip.none,
                     children: [
                       Align(
                         alignment: Alignment.topCenter,
@@ -118,12 +116,15 @@ class CalendarWidget extends StatelessWidget {
                                 height: 20,
                               ),
                               const SizedBox(height: 2),
-                              Text(
-                                '${movement.amount}€',
-                                style: TextStyle(
-                                  fontSize: 9,
-                                  color: movement.amount >= 0 ? Colors.green : Colors.red,
-                                  fontWeight: FontWeight.bold,
+                              FittedBox( // Réduit automatiquement la taille du texte si nécessaire
+                                fit: BoxFit.scaleDown,
+                                child: Text(
+                                  _formatAmount(movement.amount),
+                                  style: TextStyle(
+                                    fontSize: 12,
+                                    color: movement.amount >= 0 ? Colors.green : Colors.red,
+                                    fontWeight: FontWeight.bold,
+                                  ),
                                 ),
                               ),
                             ],
@@ -153,5 +154,12 @@ class CalendarWidget extends StatelessWidget {
         ),
       ),
     );
+  }
+
+  String _formatAmount(double amount) {
+    if (amount == amount.toInt()) {
+      return '${amount.toInt()}€';
+    }
+    return '${amount.toStringAsFixed(2)}€';
   }
 }
