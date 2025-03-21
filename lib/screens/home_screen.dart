@@ -3,6 +3,7 @@ import '../models/movement.dart';
 import '../widgets/calendar_widget.dart';
 import '../widgets/total_display.dart';
 import 'add_movement_screen.dart';
+import '../main.dart'; // Import du fichier main pour accéder au ValueNotifier
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
@@ -52,92 +53,110 @@ class _HomeScreenState extends State<HomeScreen> {
     });
   }
 
+  void toggleDarkMode() {
+    isDarkModeNotifier.value = !isDarkModeNotifier.value;
+  }
+
   @override
   Widget build(BuildContext context) {
     String monthText = _getMonthName(selectedDate.month).toUpperCase();
     String yearText = selectedDate.year.toString();
     Movement? nextMovement = getNextMovement();
+    double screenHeight = MediaQuery.of(context).size.height;
 
-    return Scaffold(
-      appBar: AppBar(
-        automaticallyImplyLeading: false,
-        backgroundColor: Colors.grey.shade300,
-        toolbarHeight: 60,
-        title: Row(
-          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-          children: [
-            Image.asset('assets/icons/app_logo.png', height: 30),
-            const Text(
-              'COMPTER SES SOUS',
-              style: TextStyle(
-                fontWeight: FontWeight.bold,
-                color: Colors.black,
-              ),
+    return ValueListenableBuilder<bool>(
+      valueListenable: isDarkModeNotifier,
+      builder: (context, isDarkMode, child) {
+        return Scaffold(
+          appBar: AppBar(
+            automaticallyImplyLeading: false,
+            backgroundColor: isDarkMode ? Colors.grey.shade800 : Colors.grey.shade300,
+            toolbarHeight: 60,
+            title: Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                Image.asset('assets/icons/app_logo.png', height: 30),
+                const Text(
+                  'COMPTER SES SOUS',
+                  style: TextStyle(
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
+                IconButton(
+                  icon: Icon(
+                    isDarkMode ? Icons.dark_mode : Icons.light_mode,
+                    color: isDarkMode ? Colors.white : Colors.black,
+                  ),
+                  onPressed: toggleDarkMode,
+                ),
+              ],
             ),
-            IconButton(
-              icon: const Icon(Icons.settings, color: Colors.black),
-              onPressed: () {},
-            ),
-          ],
-        ),
-        centerTitle: true,
-      ),
-      body: Column(
-        children: [
-          const SizedBox(height: 10),
-          Text(
-            '$monthText $yearText',
-            style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+            centerTitle: true,
           ),
-          const SizedBox(height: 10),
-          CalendarWidget(
-            movements: movements,
-            onEdit: editMovement,
-            onDelete: deleteMovement,
-            selectedDate: selectedDate,
-            onAdd: addMovement,
-          ),
-          const SizedBox(height: 10),
-
-          if (nextMovement != null)
-            Padding(
-              padding: const EdgeInsets.symmetric(vertical: 12.0),
-              child: Text(
-                _getNextMovementText(nextMovement),
-                textAlign: TextAlign.center,
-                style: const TextStyle(
-                  fontSize: 16,
+          body: Column(
+            children: [
+              const SizedBox(height: 10),
+              Text(
+                '$monthText $yearText',
+                style: TextStyle(
+                  fontSize: 18,
                   fontWeight: FontWeight.bold,
+                  color: isDarkMode ? Colors.white : Colors.black,
                 ),
               ),
-            ),
-
-          TotalDisplay(total: totalAmount),
-          const SizedBox(height: 10),
-          ElevatedButton(
-            onPressed: () async {
-              final result = await Navigator.push(
-                context,
-                MaterialPageRoute(
-                  builder: (context) => const AddMovementScreen(),
+              const SizedBox(height: 10),
+              Expanded(
+                child: CalendarWidget(
+                  movements: movements,
+                  onEdit: editMovement,
+                  onDelete: deleteMovement,
+                  selectedDate: selectedDate,
+                  onAdd: addMovement,
                 ),
-              );
-              if (result != null) addMovement(result);
-            },
-            style: ElevatedButton.styleFrom(
-              backgroundColor: Colors.grey.shade800,
-              shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(12),
               ),
-              padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 20),
-            ),
-            child: const Text(
-              'Ajouter un mouvement',
-              style: TextStyle(color: Colors.white),
-            ),
+              SizedBox(height: screenHeight * 0.05), // Ajout d'espace avant les éléments en bas
+              if (nextMovement != null)
+                Padding(
+                  padding: const EdgeInsets.symmetric(vertical: 6.0),
+                  child: Text(
+                    _getNextMovementText(nextMovement),
+                    textAlign: TextAlign.center,
+                    style: TextStyle(
+                      fontSize: 16,
+                      fontWeight: FontWeight.bold,
+                      color: isDarkMode ? Colors.white : Colors.black,
+                    ),
+                  ),
+                ),
+              TotalDisplay(total: totalAmount),
+              const SizedBox(height: 10),
+              ElevatedButton(
+                onPressed: () async {
+                  final result = await Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                      builder: (context) => const AddMovementScreen(),
+                    ),
+                  );
+                  if (result != null) addMovement(result);
+                },
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: Colors.grey.shade800,
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(12),
+                  ),
+                  padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 20),
+                ),
+                child: const Text(
+                  'Ajouter un mouvement',
+                  style: TextStyle(color: Colors.white),
+                ),
+              ),
+              SizedBox(height: screenHeight * 0.05), // Ajout d'espace après les éléments en bas
+            ],
           ),
-        ],
-      ),
+        );
+      },
     );
   }
 

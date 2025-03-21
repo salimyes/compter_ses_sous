@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import '../models/movement.dart';
+import '../main.dart';
 
 class AddMovementScreen extends StatefulWidget {
   final Movement? movement;
@@ -41,161 +42,179 @@ class _AddMovementScreenState extends State<AddMovementScreen> {
     super.dispose();
   }
 
-  /// Fonction pour convertir l'entrée de l'utilisateur en nombre valide
   double? _parseAmount(String value) {
-    value = value.replaceAll(',', '.'); // Remplace les virgules par des points
-
+    value = value.replaceAll(',', '.');
     final doubleValue = double.tryParse(value);
 
     if (doubleValue != null && doubleValue == doubleValue.floorToDouble()) {
-      // Si c'est un nombre entier, retourne l'entier
       return doubleValue.toInt().toDouble();
     }
-    return doubleValue; // Retourne le nombre double s'il n'est pas entier
+    return doubleValue;
   }
 
   @override
   Widget build(BuildContext context) {
     double buttonWidth = MediaQuery.of(context).size.width * 0.8;
 
-    return Scaffold(
-      appBar: AppBar(
-        title: Text(widget.movement == null ? 'Ajouter un mouvement' : 'Modifier un mouvement'),
-      ),
-      body: Padding(
-        padding: const EdgeInsets.all(16),
-        child: Form(
-          key: _formKey,
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.center,
-            children: [
-              const SizedBox(height: 20),
-              // Nom du mouvement
-              TextFormField(
-                initialValue: name,
-                decoration: const InputDecoration(
-                  labelText: 'Nom du mouvement',
-                  border: OutlineInputBorder(),
-                ),
-                textAlign: TextAlign.center,
-                onChanged: (value) => name = value,
-              ),
-              const SizedBox(height: 20),
-
-              // Montant du mouvement
-              TextFormField(
-                controller: _amountController,
-                decoration: const InputDecoration(
-                  labelText: 'Montant',
-                  border: OutlineInputBorder(),
-                ),
-                keyboardType: TextInputType.number,
-                textAlign: TextAlign.center,
-                onChanged: (value) {
-                  amountText = value;
-                },
-              ),
-              const SizedBox(height: 20),
-
-              // Sélection du jour (seul le jour est sélectionné)
-              Row(
-                mainAxisAlignment: MainAxisAlignment.center,
+    return ValueListenableBuilder<bool>(
+      valueListenable: isDarkModeNotifier,
+      builder: (context, isDarkMode, child) {
+        return Scaffold(
+          backgroundColor: isDarkMode ? Colors.black : Colors.white,
+          appBar: AppBar(
+            backgroundColor: isDarkMode ? Colors.grey.shade900 : Colors.white,
+            iconTheme: IconThemeData(color: isDarkMode ? Colors.white : Colors.black),
+            title: Text(
+              widget.movement == null ? 'Ajouter un mouvement' : 'Modifier un mouvement',
+              style: TextStyle(color: isDarkMode ? Colors.white : Colors.black),
+            ),
+          ),
+          body: Padding(
+            padding: const EdgeInsets.all(16),
+            child: Form(
+              key: _formKey,
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.center,
                 children: [
-                  const Text('Jour du paiement : '),
-                  DropdownButton<int>(
-                    value: selectedDay,
-                    items: List.generate(31, (index) => index + 1)
-                        .map((day) => DropdownMenuItem(
-                      value: day,
-                      child: Text(day.toString()),
-                    ))
-                        .toList(),
+                  const SizedBox(height: 20),
+
+                  TextFormField(
+                    initialValue: name,
+                    decoration: InputDecoration(
+                      labelText: 'Nom du mouvement',
+                      labelStyle: TextStyle(color: isDarkMode ? Colors.white70 : Colors.black),
+                      border: const OutlineInputBorder(),
+                      filled: true,
+                      fillColor: isDarkMode ? Colors.grey.shade800 : Colors.white,
+                    ),
+                    style: TextStyle(color: isDarkMode ? Colors.white : Colors.black),
+                    textAlign: TextAlign.center,
+                    onChanged: (value) => name = value,
+                  ),
+                  const SizedBox(height: 20),
+
+                  TextFormField(
+                    controller: _amountController,
+                    decoration: InputDecoration(
+                      labelText: 'Montant',
+                      labelStyle: TextStyle(color: isDarkMode ? Colors.white70 : Colors.black),
+                      border: const OutlineInputBorder(),
+                      filled: true,
+                      fillColor: isDarkMode ? Colors.grey.shade800 : Colors.white,
+                    ),
+                    style: TextStyle(color: isDarkMode ? Colors.white : Colors.black),
+                    keyboardType: TextInputType.number,
+                    textAlign: TextAlign.center,
                     onChanged: (value) {
-                      if (value != null) {
-                        setState(() {
-                          selectedDay = value;
-                        });
-                      }
+                      amountText = value;
                     },
+                  ),
+                  const SizedBox(height: 20),
+
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      Text(
+                        'Jour du paiement : ',
+                        style: TextStyle(color: isDarkMode ? Colors.white : Colors.black),
+                      ),
+                      DropdownButton<int>(
+                        dropdownColor: isDarkMode ? Colors.grey.shade800 : Colors.white,
+                        value: selectedDay,
+                        items: List.generate(31, (index) => index + 1)
+                            .map((day) => DropdownMenuItem(
+                          value: day,
+                          child: Text(
+                            day.toString(),
+                            style: TextStyle(color: isDarkMode ? Colors.white : Colors.black),
+                          ),
+                        ))
+                            .toList(),
+                        onChanged: (value) {
+                          if (value != null) {
+                            setState(() {
+                              selectedDay = value;
+                            });
+                          }
+                        },
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: 40),
+
+                  Center(
+                    child: Column(
+                      children: [
+                        SizedBox(
+                          width: buttonWidth,
+                          child: ElevatedButton(
+                            onPressed: () {
+                              if (_formKey.currentState!.validate()) {
+                                double? amount = _parseAmount(amountText) ?? 0.0;
+                                if (amount > 0) amount = -amount;
+                                Navigator.pop(
+                                  context,
+                                  Movement(
+                                    name: name,
+                                    amount: amount,
+                                    date: DateTime(DateTime.now().year, DateTime.now().month, selectedDay),
+                                  ),
+                                );
+                              }
+                            },
+                            style: ElevatedButton.styleFrom(
+                              backgroundColor: Colors.red,
+                              padding: const EdgeInsets.symmetric(vertical: 14),
+                              shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(12),
+                              ),
+                            ),
+                            child: const Text(
+                              'AJOUTER CETTE DÉPENSE',
+                              style: TextStyle(color: Colors.white, fontSize: 16, fontWeight: FontWeight.bold),
+                            ),
+                          ),
+                        ),
+                        const SizedBox(height: 20),
+
+                        SizedBox(
+                          width: buttonWidth,
+                          child: ElevatedButton(
+                            onPressed: () {
+                              if (_formKey.currentState!.validate()) {
+                                double? amount = _parseAmount(amountText) ?? 0.0;
+                                Navigator.pop(
+                                  context,
+                                  Movement(
+                                    name: name,
+                                    amount: amount,
+                                    date: DateTime(DateTime.now().year, DateTime.now().month, selectedDay),
+                                  ),
+                                );
+                              }
+                            },
+                            style: ElevatedButton.styleFrom(
+                              backgroundColor: Colors.green,
+                              padding: const EdgeInsets.symmetric(vertical: 14),
+                              shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(12),
+                              ),
+                            ),
+                            child: const Text(
+                              'AJOUTER CETTE ENTRÉE',
+                              style: TextStyle(color: Colors.white, fontSize: 16, fontWeight: FontWeight.bold),
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
                   ),
                 ],
               ),
-              const SizedBox(height: 40),
-
-              // Boutons pour ajouter une dépense ou une entrée
-              Center(
-                child: Column(
-                  children: [
-                    // Bouton "Ajouter cette dépense"
-                    SizedBox(
-                      width: buttonWidth,
-                      child: ElevatedButton(
-                        onPressed: () {
-                          if (_formKey.currentState!.validate()) {
-                            double? amount = _parseAmount(amountText) ?? 0.0;
-                            if (amount > 0) amount = -amount;
-                            Navigator.pop(
-                              context,
-                              Movement(
-                                name: name,
-                                amount: amount,
-                                date: DateTime(DateTime.now().year, DateTime.now().month, selectedDay),
-                              ),
-                            );
-                          }
-                        },
-                        style: ElevatedButton.styleFrom(
-                          backgroundColor: Colors.red,
-                          padding: const EdgeInsets.symmetric(vertical: 14),
-                          shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(12),
-                          ),
-                        ),
-                        child: const Text(
-                          'AJOUTER CETTE DÉPENSE',
-                          style: TextStyle(color: Colors.white, fontSize: 16, fontWeight: FontWeight.bold),
-                        ),
-                      ),
-                    ),
-                    const SizedBox(height: 20),
-
-                    // Bouton "Ajouter cette entrée"
-                    SizedBox(
-                      width: buttonWidth,
-                      child: ElevatedButton(
-                        onPressed: () {
-                          if (_formKey.currentState!.validate()) {
-                            double? amount = _parseAmount(amountText) ?? 0.0;
-                            Navigator.pop(
-                              context,
-                              Movement(
-                                name: name,
-                                amount: amount,
-                                date: DateTime(DateTime.now().year, DateTime.now().month, selectedDay),
-                              ),
-                            );
-                          }
-                        },
-                        style: ElevatedButton.styleFrom(
-                          backgroundColor: Colors.green,
-                          padding: const EdgeInsets.symmetric(vertical: 14),
-                          shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(12),
-                          ),
-                        ),
-                        child: const Text(
-                          'AJOUTER CETTE ENTRÉE',
-                          style: TextStyle(color: Colors.white, fontSize: 16, fontWeight: FontWeight.bold),
-                        ),
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-            ],
+            ),
           ),
-        ),
-      ),
+        );
+      },
     );
   }
 }
