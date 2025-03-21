@@ -1,9 +1,9 @@
 import 'package:flutter/material.dart';
 import '../models/movement.dart';
-import '../main.dart';
+import '../main.dart'; // import pour récupérer le ValueNotifier isDarkModeNotifier
 
 class AddMovementScreen extends StatefulWidget {
-  final Movement? movement;
+  final Movement? movement; // mouvement passé en argument pour modification éventuelle
 
   const AddMovementScreen({super.key, this.movement});
 
@@ -12,49 +12,49 @@ class AddMovementScreen extends StatefulWidget {
 }
 
 class _AddMovementScreenState extends State<AddMovementScreen> {
-  final _formKey = GlobalKey<FormState>();
-  late String name;
-  late String amountText;
-  late int selectedDay;
-  final TextEditingController _amountController = TextEditingController();
+  final _formKey = GlobalKey<FormState>(); // clé du formulaire pour validation
+  late String name; // nom du mouvement
+  late String amountText; // montant sous forme de texte
+  late int selectedDay; // jour sélectionné pour le mouvement
+  final TextEditingController _amountController = TextEditingController(); // contrôleur pour le champ montant
 
   @override
   void initState() {
     super.initState();
-    name = widget.movement?.name ?? '';
+    name = widget.movement?.name ?? ''; // récupère le nom du mouvement ou une chaîne vide par défaut
     amountText = (widget.movement?.amount != null && widget.movement!.amount != 0)
         ? widget.movement!.amount.abs().toString()
-        : '';
-    selectedDay = widget.movement?.date.day ?? DateTime.now().day;
+        : ''; // affiche le montant si fourni, sinon laisse vide
+    selectedDay = widget.movement?.date.day ?? DateTime.now().day; // jour par défaut : aujourd'hui
 
-    _amountController.text = amountText;
+    _amountController.text = amountText; // initialisation du champ de saisie montant
 
     _amountController.addListener(() {
       if (_amountController.text == '0.0') {
-        _amountController.clear();
+        _amountController.clear(); // retire le zéro si l'utilisateur ne tape que ça
       }
     });
   }
 
   @override
   void dispose() {
-    _amountController.dispose();
+    _amountController.dispose(); // libère les ressources
     super.dispose();
   }
 
   double? _parseAmount(String value) {
-    value = value.replaceAll(',', '.'); // 15,99 devient 15.99
+    value = value.replaceAll(',', '.'); // remplace les virgules par des points pour éviter les erreurs
     final doubleValue = double.tryParse(value);
 
     if (doubleValue != null && doubleValue == doubleValue.floorToDouble()) {
-      return doubleValue.toInt().toDouble();
+      return doubleValue.toInt().toDouble(); // si c'est un entier, le retourne en tant que double entier
     }
-    return doubleValue;
+    return doubleValue; // retourne la valeur en double s'il n'est pas entier
   }
 
   @override
   Widget build(BuildContext context) {
-    double buttonWidth = MediaQuery.of(context).size.width * 0.8;
+    double buttonWidth = MediaQuery.of(context).size.width * 0.8; // largeur des boutons
 
     return ValueListenableBuilder<bool>(
       valueListenable: isDarkModeNotifier,
@@ -151,7 +151,7 @@ class _AddMovementScreenState extends State<AddMovementScreen> {
                             onPressed: () {
                               if (_formKey.currentState!.validate()) {
                                 double? amount = _parseAmount(amountText) ?? 0.0;
-                                if (amount > 0) amount = -amount;
+                                if (amount > 0) amount = -amount; // si c'est une dépense, montant négatif
                                 Navigator.pop(
                                   context,
                                   Movement(

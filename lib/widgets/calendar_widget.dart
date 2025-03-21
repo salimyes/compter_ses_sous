@@ -1,14 +1,14 @@
 import 'package:flutter/material.dart';
 import '../models/movement.dart';
 import '../screens/add_movement_screen.dart';
-import '../main.dart'; // Import pour récupérer le ValueNotifier isDarkModeNotifier
+import '../main.dart'; // import pour récupérer le ValueNotifier isDarkModeNotifier
 
 class CalendarWidget extends StatelessWidget {
-  final List<Movement> movements;
-  final Function(Movement, Movement) onEdit;
-  final Function(Movement) onDelete;
-  final Function(Movement) onAdd;
-  final DateTime selectedDate;
+  final List<Movement> movements; // liste des mouvements pour chaque jour
+  final Function(Movement, Movement) onEdit; // fonction pour modifier un mouvement
+  final Function(Movement) onDelete; // fonction pour supprimer un mouvement
+  final Function(Movement) onAdd; // fonction pour ajouter un mouvement
+  final DateTime selectedDate; // mois actuellement affiché sur le calendrier
 
   CalendarWidget({
     required this.movements,
@@ -19,6 +19,7 @@ class CalendarWidget extends StatelessWidget {
   });
 
   int get daysInMonth {
+    // calcul du nombre de jours dans le mois sélectionné
     return DateTime(selectedDate.year, selectedDate.month + 1, 0).day;
   }
 
@@ -26,7 +27,7 @@ class CalendarWidget extends StatelessWidget {
   Widget build(BuildContext context) {
     double screenHeight = MediaQuery.of(context).size.height;
     double screenWidth = MediaQuery.of(context).size.width;
-    DateTime today = DateTime.now();
+    DateTime today = DateTime.now(); // date actuelle
 
     return ValueListenableBuilder<bool>(
       valueListenable: isDarkModeNotifier,
@@ -35,8 +36,8 @@ class CalendarWidget extends StatelessWidget {
           child: SingleChildScrollView(
             child: Center(
               child: Container(
-                height: screenHeight * 0.4,
-                width: screenWidth * 0.90,
+                height: screenHeight * 0.4, // prend 40% de la hauteur de l'écran
+                width: screenWidth * 0.90, // prend 90% de la largeur de l'écran
                 padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
                 decoration: BoxDecoration(
                   color: isDarkMode ? Colors.grey.shade800 : Colors.grey.shade300,
@@ -46,7 +47,7 @@ class CalendarWidget extends StatelessWidget {
                   physics: const NeverScrollableScrollPhysics(),
                   shrinkWrap: true,
                   gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-                    crossAxisCount: 7,
+                    crossAxisCount: 7, // affiche 7 colonnes (jours de la semaine)
                     crossAxisSpacing: 10,
                     mainAxisSpacing: 24,
                     childAspectRatio: 1,
@@ -55,14 +56,13 @@ class CalendarWidget extends StatelessWidget {
                   itemBuilder: (context, index) {
                     DateTime date = DateTime(selectedDate.year, selectedDate.month, index + 1);
                     List<Movement> dayMovements = movements.where((m) => m.date.day == date.day).toList();
-
                     double totalAmount = dayMovements.fold(0.0, (sum, m) => sum + m.amount);
-
                     bool isToday = date.day == today.day && date.month == today.month && date.year == today.year;
 
                     return GestureDetector(
                       onTap: () async {
                         if (dayMovements.isNotEmpty) {
+                          // si des mouvements existent pour ce jour, on affiche une boîte de dialogue
                           await showDialog(
                             context: context,
                             builder: (context) => AlertDialog(
@@ -97,7 +97,7 @@ class CalendarWidget extends StatelessWidget {
                                             icon: const Icon(Icons.delete),
                                             onPressed: () {
                                               onDelete(movement);
-                                              Navigator.pop(context);
+                                              Navigator.pop(context); // ferme la boîte de dialogue après suppression
                                             },
                                           ),
                                         ],
@@ -109,11 +109,7 @@ class CalendarWidget extends StatelessWidget {
                                           context,
                                           MaterialPageRoute(
                                             builder: (context) => AddMovementScreen(
-                                              movement: Movement(
-                                                name: '',
-                                                amount: 0.0,
-                                                date: date,
-                                              ),
+                                              movement: Movement(name: '', amount: 0.0, date: date),
                                             ),
                                           ),
                                         );
@@ -127,15 +123,12 @@ class CalendarWidget extends StatelessWidget {
                             ),
                           );
                         } else {
+                          // si aucun mouvement, propose d'en ajouter un
                           final newMovement = await Navigator.push(
                             context,
                             MaterialPageRoute(
                               builder: (context) => AddMovementScreen(
-                                movement: Movement(
-                                  name: '',
-                                  amount: 0.0,
-                                  date: date,
-                                ),
+                                movement: Movement(name: '', amount: 0.0, date: date),
                               ),
                             ),
                           );
@@ -153,7 +146,7 @@ class CalendarWidget extends StatelessWidget {
                               decoration: BoxDecoration(
                                 color: isDarkMode ? Colors.black : Colors.white,
                                 borderRadius: BorderRadius.circular(12),
-                                border: isToday ? Border.all(color: Colors.green, width: 2) : null,
+                                border: isToday ? Border.all(color: Colors.green, width: 2) : null, // si c'est aujourd'hui, contour vert
                               ),
                               child: totalAmount != 0 ? Column(
                                 mainAxisAlignment: MainAxisAlignment.center,
@@ -178,7 +171,7 @@ class CalendarWidget extends StatelessWidget {
                             left: 0,
                             right: 0,
                             child: Text(
-                              '${index + 1}',
+                              '${index + 1}', // numéro du jour
                               textAlign: TextAlign.center,
                               style: TextStyle(
                                 fontWeight: FontWeight.bold,
@@ -202,8 +195,8 @@ class CalendarWidget extends StatelessWidget {
 
   String _formatAmount(double amount) {
     if (amount == amount.toInt()) {
-      return '${amount.toInt()}€';
+      return '${amount.toInt()}€'; // affiche un entier si pas de décimales
     }
-    return '${amount.toStringAsFixed(2)}€';
+    return '${amount.toStringAsFixed(2)}€'; // sinon affiche deux décimales
   }
 }
