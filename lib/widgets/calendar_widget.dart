@@ -21,6 +21,10 @@ class CalendarWidget extends StatelessWidget {
     return DateTime(selectedDate.year, selectedDate.month + 1, 0).day;
   }
 
+  double _calculateTotalAmountForDay(List<Movement> dayMovements) {
+    return dayMovements.fold(0.0, (sum, movement) => sum + movement.amount);
+  }
+
   @override
   Widget build(BuildContext context) {
     double screenHeight = MediaQuery.of(context).size.height;
@@ -49,47 +53,90 @@ class CalendarWidget extends StatelessWidget {
               itemCount: daysInMonth,
               itemBuilder: (context, index) {
                 DateTime date = DateTime(selectedDate.year, selectedDate.month, index + 1);
-                Movement? movement = movements.firstWhere(
-                      (m) => m.date.day == date.day,
-                  orElse: () => Movement(name: '', amount: 0, date: date),
-                );
+                List<Movement> dayMovements = movements.where((m) => m.date.day == date.day).toList();
+                double totalAmountForDay = _calculateTotalAmountForDay(dayMovements);
 
                 return GestureDetector(
                   onTap: () async {
-                    if (movement.name.isNotEmpty) {
-                      final result = await showDialog(
+                    if (dayMovements.isNotEmpty) {
+                      await showDialog(
                         context: context,
                         builder: (context) => AlertDialog(
-                          title: const Text("Modifier ou supprimer"),
-                          actions: [
-                            TextButton(
-                              onPressed: () async {
-                                final newMovement = await Navigator.push(
-                                  context,
-                                  MaterialPageRoute(
-                                    builder: (context) => AddMovementScreen(movement: movement),
+                          title: Text("Mouvements du ${index + 1}"),
+                          content: SingleChildScrollView(
+                            child: Column(
+                              children: [
+                                ...dayMovements.map((movement) => Row(
+                                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                                  children: [
+                                    Expanded(
+                                      child: Text(
+                                        "${movement.name} : ${movement.amount}€",
+                                        style: TextStyle(
+                                          color: movement.amount >= 0 ? Colors.green : Colors.red,
+                                        ),
+                                      ),
+                                    ),
+                                    IconButton(
+                                      icon: Icon(Icons.edit),
+                                      onPressed: () async {
+                                        final newMovement = await Navigator.push(
+                                          context,
+                                          MaterialPageRoute(
+                                            builder: (context) => AddMovementScreen(movement: movement),
+                                          ),
+                                        );
+                                        if (newMovement != null) onEdit(movement, newMovement);
+                                        Navigator.pop(context);
+                                      },
+                                    ),
+                                    IconButton(
+                                      icon: Icon(Icons.delete),
+                                      onPressed: () {
+                                        onDelete(movement);
+                                        Navigator.pop(context);
+                                      },
+                                    ),
+                                  ],
+                                )).toList(),
+                                const SizedBox(height: 20),
+                                ElevatedButton(
+                                  onPressed: () async {
+                                    final newMovement = await Navigator.push(
+                                      context,
+                                      MaterialPageRoute(
+                                        builder: (context) => AddMovementScreen(
+                                          movement: Movement(name: '', amount: 0, date: date),
+                                        ),
+                                      ),
+                                    );
+                                    if (newMovement != null) onAdd(newMovement);
+                                    Navigator.pop(context);
+                                  },
+                                  style: ElevatedButton.styleFrom(
+                                    backgroundColor: Colors.blue,
+                                    padding: const EdgeInsets.symmetric(vertical: 10, horizontal: 20),
+                                    shape: RoundedRectangleBorder(
+                                      borderRadius: BorderRadius.circular(12),
+                                    ),
                                   ),
-                                );
-                                if (newMovement != null) onEdit(movement, newMovement);
-                                Navigator.pop(context);
-                              },
-                              child: const Text("Modifier"),
+                                  child: const Text(
+                                    "Ajouter Nouveau",
+                                    style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
+                                  ),
+                                )
+                              ],
                             ),
-                            TextButton(
-                              onPressed: () {
-                                onDelete(movement);
-                                Navigator.pop(context);
-                              },
-                              child: const Text("Supprimer"),
-                            ),
-                          ],
+                          ),
                         ),
                       );
                     } else {
                       final newMovement = await Navigator.push(
                         context,
                         MaterialPageRoute(
-                          builder: (context) => AddMovementScreen(movement: movement),
+                          builder: (context) => AddMovementScreen(
+                            movement: Movement(name: '', amount: 0, date: date),
+                          ),
                         ),
                       );
                       if (newMovement != null) onAdd(newMovement);
@@ -107,22 +154,17 @@ class CalendarWidget extends StatelessWidget {
                             color: Colors.white,
                             borderRadius: BorderRadius.circular(12),
                           ),
-                          child: movement.name.isNotEmpty
+                          child: dayMovements.isNotEmpty
                               ? Column(
                             mainAxisAlignment: MainAxisAlignment.center,
                             children: [
-                              Image.asset(
-                                'assets/icons/${movement.name.toLowerCase()}.png',
-                                height: 20,
-                              ),
-                              const SizedBox(height: 2),
-                              FittedBox( // Réduit automatiquement la taille du texte si nécessaire
+                              FittedBox(
                                 fit: BoxFit.scaleDown,
                                 child: Text(
-                                  _formatAmount(movement.amount),
+                                  '${totalAmountForDay.toStringAsFixed(2).replaceAll(".00", "")}€',
                                   style: TextStyle(
                                     fontSize: 12,
-                                    color: movement.amount >= 0 ? Colors.green : Colors.red,
+                                    color: totalAmountForDay >= 0 ? Colors.green : Colors.red,
                                     fontWeight: FontWeight.bold,
                                   ),
                                 ),
@@ -154,12 +196,5 @@ class CalendarWidget extends StatelessWidget {
         ),
       ),
     );
-  }
-
-  String _formatAmount(double amount) {
-    if (amount == amount.toInt()) {
-      return '${amount.toInt()}€';
-    }
-    return '${amount.toStringAsFixed(2)}€';
   }
 }
