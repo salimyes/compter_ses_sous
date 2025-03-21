@@ -13,9 +13,8 @@ class AddMovementScreen extends StatefulWidget {
 class _AddMovementScreenState extends State<AddMovementScreen> {
   final _formKey = GlobalKey<FormState>();
   late String name;
-  late String amountText; // Texte saisi pour le montant
+  late String amountText;
   late int selectedDay;
-  late String selectedType; // 'Entrée' ou 'Dépense'
   final TextEditingController _amountController = TextEditingController();
 
   @override
@@ -23,12 +22,9 @@ class _AddMovementScreenState extends State<AddMovementScreen> {
     super.initState();
     name = widget.movement?.name ?? '';
     amountText = (widget.movement?.amount != null && widget.movement!.amount != 0)
-        ? widget.movement!.amount.abs().toString() // toujours positif dans le champ
+        ? widget.movement!.amount.abs().toString()
         : '';
     selectedDay = widget.movement?.date.day ?? DateTime.now().day;
-    selectedType = (widget.movement?.amount != null && widget.movement!.amount < 0)
-        ? 'Dépense'
-        : 'Entrée';
 
     _amountController.text = amountText;
 
@@ -45,8 +41,23 @@ class _AddMovementScreenState extends State<AddMovementScreen> {
     super.dispose();
   }
 
+  /// Fonction pour convertir l'entrée de l'utilisateur en nombre valide
+  double? _parseAmount(String value) {
+    value = value.replaceAll(',', '.'); // Remplace les virgules par des points
+
+    final doubleValue = double.tryParse(value);
+
+    if (doubleValue != null && doubleValue == doubleValue.floorToDouble()) {
+      // Si c'est un nombre entier, retourne l'entier
+      return doubleValue.toInt().toDouble();
+    }
+    return doubleValue; // Retourne le nombre double s'il n'est pas entier
+  }
+
   @override
   Widget build(BuildContext context) {
+    double buttonWidth = MediaQuery.of(context).size.width * 0.8;
+
     return Scaffold(
       appBar: AppBar(
         title: Text(widget.movement == null ? 'Ajouter un mouvement' : 'Modifier un mouvement'),
@@ -56,28 +67,41 @@ class _AddMovementScreenState extends State<AddMovementScreen> {
         child: Form(
           key: _formKey,
           child: Column(
+            crossAxisAlignment: CrossAxisAlignment.center,
             children: [
-              // Champ Nom
+              const SizedBox(height: 20),
+              // Nom du mouvement
               TextFormField(
                 initialValue: name,
-                decoration: const InputDecoration(labelText: 'Nom du mouvement'),
+                decoration: const InputDecoration(
+                  labelText: 'Nom du mouvement',
+                  border: OutlineInputBorder(),
+                ),
+                textAlign: TextAlign.center,
                 onChanged: (value) => name = value,
               ),
-              // Champ Montant
+              const SizedBox(height: 20),
+
+              // Montant du mouvement
               TextFormField(
                 controller: _amountController,
-                decoration: const InputDecoration(labelText: 'Montant'),
+                decoration: const InputDecoration(
+                  labelText: 'Montant',
+                  border: OutlineInputBorder(),
+                ),
                 keyboardType: TextInputType.number,
+                textAlign: TextAlign.center,
                 onChanged: (value) {
                   amountText = value;
                 },
               ),
               const SizedBox(height: 20),
+
               // Sélection du jour (seul le jour est sélectionné)
               Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                mainAxisAlignment: MainAxisAlignment.center,
                 children: [
-                  Text('Jour du paiement : $selectedDay'),
+                  const Text('Jour du paiement : '),
                   DropdownButton<int>(
                     value: selectedDay,
                     items: List.generate(31, (index) => index + 1)
@@ -96,50 +120,77 @@ class _AddMovementScreenState extends State<AddMovementScreen> {
                   ),
                 ],
               ),
-              const SizedBox(height: 20),
-              // Sélection du type de mouvement
-              Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                children: [
-                  const Text('Type de mouvement :'),
-                  DropdownButton<String>(
-                    value: selectedType,
-                    items: ['Entrée', 'Dépense']
-                        .map((type) => DropdownMenuItem(
-                      value: type,
-                      child: Text(type),
-                    ))
-                        .toList(),
-                    onChanged: (value) {
-                      if (value != null) {
-                        setState(() {
-                          selectedType = value;
-                        });
-                      }
-                    },
-                  ),
-                ],
-              ),
-              const SizedBox(height: 20),
-              // Bouton d'enregistrement
-              ElevatedButton(
-                onPressed: () {
-                  if (_formKey.currentState!.validate()) {
-                    double amount = double.tryParse(amountText) ?? 0.0;
-                    if (selectedType == 'Dépense' && amount > 0) {
-                      amount = -amount; // Convertir en négatif pour une dépense
-                    }
-                    Navigator.pop(
-                      context,
-                      Movement(
-                        name: name,
-                        amount: amount,
-                        date: DateTime(DateTime.now().year, DateTime.now().month, selectedDay),
+              const SizedBox(height: 40),
+
+              // Boutons pour ajouter une dépense ou une entrée
+              Center(
+                child: Column(
+                  children: [
+                    // Bouton "Ajouter cette dépense"
+                    SizedBox(
+                      width: buttonWidth,
+                      child: ElevatedButton(
+                        onPressed: () {
+                          if (_formKey.currentState!.validate()) {
+                            double? amount = _parseAmount(amountText) ?? 0.0;
+                            if (amount > 0) amount = -amount;
+                            Navigator.pop(
+                              context,
+                              Movement(
+                                name: name,
+                                amount: amount,
+                                date: DateTime(DateTime.now().year, DateTime.now().month, selectedDay),
+                              ),
+                            );
+                          }
+                        },
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: Colors.red,
+                          padding: const EdgeInsets.symmetric(vertical: 14),
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(12),
+                          ),
+                        ),
+                        child: const Text(
+                          'AJOUTER CETTE DÉPENSE',
+                          style: TextStyle(color: Colors.white, fontSize: 16, fontWeight: FontWeight.bold),
+                        ),
                       ),
-                    );
-                  }
-                },
-                child: const Text('Enregistrer'),
+                    ),
+                    const SizedBox(height: 20),
+
+                    // Bouton "Ajouter cette entrée"
+                    SizedBox(
+                      width: buttonWidth,
+                      child: ElevatedButton(
+                        onPressed: () {
+                          if (_formKey.currentState!.validate()) {
+                            double? amount = _parseAmount(amountText) ?? 0.0;
+                            Navigator.pop(
+                              context,
+                              Movement(
+                                name: name,
+                                amount: amount,
+                                date: DateTime(DateTime.now().year, DateTime.now().month, selectedDay),
+                              ),
+                            );
+                          }
+                        },
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: Colors.green,
+                          padding: const EdgeInsets.symmetric(vertical: 14),
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(12),
+                          ),
+                        ),
+                        child: const Text(
+                          'AJOUTER CETTE ENTRÉE',
+                          style: TextStyle(color: Colors.white, fontSize: 16, fontWeight: FontWeight.bold),
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
               ),
             ],
           ),
