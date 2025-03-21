@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'screens/home_screen.dart';
 
-final ValueNotifier<bool> isDarkModeNotifier = ValueNotifier<bool>(false); // Ajout d'un ValueNotifier
+final ValueNotifier<bool> isDarkModeNotifier = ValueNotifier<bool>(false);
 
 void main() {
   runApp(const MyApp());

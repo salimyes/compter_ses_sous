@@ -43,7 +43,7 @@ class _AddMovementScreenState extends State<AddMovementScreen> {
   }
 
   double? _parseAmount(String value) {
-    value = value.replaceAll(',', '.');
+    value = value.replaceAll(',', '.'); // 15,99 devient 15.99
     final doubleValue = double.tryParse(value);
 
     if (doubleValue != null && doubleValue == doubleValue.floorToDouble()) {

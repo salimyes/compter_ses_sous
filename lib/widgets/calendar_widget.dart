@@ -26,6 +26,7 @@ class CalendarWidget extends StatelessWidget {
   Widget build(BuildContext context) {
     double screenHeight = MediaQuery.of(context).size.height;
     double screenWidth = MediaQuery.of(context).size.width;
+    DateTime today = DateTime.now();
 
     return ValueListenableBuilder<bool>(
       valueListenable: isDarkModeNotifier,
@@ -57,6 +58,8 @@ class CalendarWidget extends StatelessWidget {
 
                     double totalAmount = dayMovements.fold(0.0, (sum, m) => sum + m.amount);
 
+                    bool isToday = date.day == today.day && date.month == today.month && date.year == today.year;
+
                     return GestureDetector(
                       onTap: () async {
                         if (dayMovements.isNotEmpty) {
@@ -79,7 +82,7 @@ class CalendarWidget extends StatelessWidget {
                                         mainAxisSize: MainAxisSize.min,
                                         children: [
                                           IconButton(
-                                            icon: Icon(Icons.edit),
+                                            icon: const Icon(Icons.edit),
                                             onPressed: () async {
                                               final newMovement = await Navigator.push(
                                                 context,
@@ -91,7 +94,7 @@ class CalendarWidget extends StatelessWidget {
                                             },
                                           ),
                                           IconButton(
-                                            icon: Icon(Icons.delete),
+                                            icon: const Icon(Icons.delete),
                                             onPressed: () {
                                               onDelete(movement);
                                               Navigator.pop(context);
@@ -116,7 +119,7 @@ class CalendarWidget extends StatelessWidget {
                                         );
                                         if (newMovement != null) onAdd(newMovement);
                                       },
-                                      child: Text('Ajouter Nouveau'),
+                                      child: const Text('Ajouter Nouveau'),
                                     )
                                   ],
                                 ),
@@ -150,6 +153,7 @@ class CalendarWidget extends StatelessWidget {
                               decoration: BoxDecoration(
                                 color: isDarkMode ? Colors.black : Colors.white,
                                 borderRadius: BorderRadius.circular(12),
+                                border: isToday ? Border.all(color: Colors.green, width: 2) : null,
                               ),
                               child: totalAmount != 0 ? Column(
                                 mainAxisAlignment: MainAxisAlignment.center,

@@ -3,7 +3,7 @@ import '../models/movement.dart';
 import '../widgets/calendar_widget.dart';
 import '../widgets/total_display.dart';
 import 'add_movement_screen.dart';
-import '../main.dart'; // Import du fichier main pour accéder au ValueNotifier
+import '../main.dart';
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
@@ -114,7 +114,7 @@ class _HomeScreenState extends State<HomeScreen> {
                   onAdd: addMovement,
                 ),
               ),
-              SizedBox(height: screenHeight * 0.05), // Ajout d'espace avant les éléments en bas
+              SizedBox(height: screenHeight * 0.05),
               if (nextMovement != null)
                 Padding(
                   padding: const EdgeInsets.symmetric(vertical: 6.0),
@@ -152,7 +152,7 @@ class _HomeScreenState extends State<HomeScreen> {
                   style: TextStyle(color: Colors.white),
                 ),
               ),
-              SizedBox(height: screenHeight * 0.05), // Ajout d'espace après les éléments en bas
+              SizedBox(height: screenHeight * 0.05),
             ],
           ),
         );
