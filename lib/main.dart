@@ -23,7 +23,7 @@ class MyApp extends StatelessWidget {
             primarySwatch: Colors.blue, // thème principal en bleu
             scaffoldBackgroundColor: isDarkMode ? Colors.black : Colors.white, // couleur de fond selon le mode
             appBarTheme: AppBarTheme(
-              backgroundColor: isDarkMode ? Colors.grey.shade900 : Colors.white, // couleur de l'appbar selon le mode
+              backgroundColor: isDarkMode ? Colors.grey.shade900 : Colors.white, // couleur de appbar selon le mode
               elevation: 0, // enlève l'ombre de l'appbar
               iconTheme: IconThemeData(
                   color: isDarkMode ? Colors.white : Colors.black), // couleur des icônes selon le mode
@@ -40,3 +40,7 @@ class MyApp extends StatelessWidget {
     );
   }
 }
+
+
+
+
